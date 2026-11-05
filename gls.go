@@ -7,21 +7,41 @@ import (
 )
 
 func main() {
-	fileList, err := os.ReadDir(".")
+	// init values
+	showHidden := false
+	directory := "."
+
+	// check if there are arguments
+	if len(os.Args) > 1 {
+		arguments := os.Args[1:]
+		for _, argument := range arguments {
+			if isFlag(argument) {
+				switch argument {
+				case "-a":
+					showHidden = true
+				default:
+					fmt.Println("Unknown flag: ", argument)
+					return
+				}
+			} else {
+				directory = argument
+			}
+		}
+	}
+	// retrive all files under directroy
+	fileList, err := os.ReadDir(directory)
 	if err != nil {
 		fmt.Println("Invalid Files")
-		return
+		os.Exit(1)
 	}
 
 	for _, file := range fileList {
-
-		if len(os.Args) > 1 {
-			argument := os.Args[1]
-			if showAll(argument) {
-				fmt.Println(file.Name())
-				continue
-			}
+		// show all files when showHidden
+		if showHidden {
+			fmt.Println(file.Name())
+			continue
 		}
+		// show non hidden when not showHidden
 		if !isHidden(file.Name()) {
 			fmt.Println(file.Name())
 		}
@@ -33,6 +53,9 @@ func isHidden(file string) bool {
 	return strings.HasPrefix(file, ".")
 }
 
-func showAll(arg string) bool {
-	return arg == "-a"
+// checks if argument is a flag
+func isFlag(arg string) bool {
+	return strings.HasPrefix(arg, "-")
 }
+
+// implement -l
